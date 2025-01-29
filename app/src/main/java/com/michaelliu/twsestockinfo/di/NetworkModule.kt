@@ -2,7 +2,8 @@ package com.michaelliu.twsestockinfo.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.michaelliu.twsestockinfo.BuildConfig
-import com.michaelliu.twsestockinfo.utils.Constants.BASE_URL
+import com.michaelliu.twsestockinfo.data.remote.api.StockApiService
+import com.michaelliu.twsestockinfo.utils.Constants.TWSE_API_BASE_URL
 import com.michaelliu.twsestockinfo.utils.Constants.CONNECT_TIMEOUT
 import com.michaelliu.twsestockinfo.utils.Constants.READ_TIMEOUT
 import com.michaelliu.twsestockinfo.utils.Constants.WRITE_TIMEOUT
@@ -66,9 +67,17 @@ object NetworkModule {
     ) : Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(TWSE_API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideStockApiService(
+        retrofit: Retrofit
+    ) : StockApiService {
+        return retrofit.create(StockApiService::class.java)
     }
 }
