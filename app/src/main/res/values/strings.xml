@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TWSE Stock Info</string>
+    <string name="tool_bar_title">Stock List</string>
 </resources>

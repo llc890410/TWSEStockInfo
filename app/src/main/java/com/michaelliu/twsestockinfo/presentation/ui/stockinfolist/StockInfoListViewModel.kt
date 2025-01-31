@@ -1,4 +1,4 @@
-package com.michaelliu.twsestockinfo.presentation.ui.stocklist
+package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
