@@ -1,13 +1,14 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.usecase.GetStockInfoListUseCase
-import com.michaelliu.twsestockinfo.utils.NetworkResult
+import com.michaelliu.twsestockinfo.utils.onFailure
+import com.michaelliu.twsestockinfo.utils.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,13 +16,22 @@ import javax.inject.Inject
 class StockInfoListViewModel @Inject constructor(
     private val getStockInfoListUseCase: GetStockInfoListUseCase
 ) : ViewModel() {
-    private val _stockState = MutableLiveData<NetworkResult<List<StockInfo>>>()
-    val stockState: LiveData<NetworkResult<List<StockInfo>>> = _stockState
 
-    fun fetchStockInfoList() {
+    private val _uiState = MutableStateFlow<UiState<List<StockInfo>>>(UiState.Loading)
+    val uiState: StateFlow<UiState<List<StockInfo>>> = _uiState
+
+    fun loadStockInfoList() {
+        _uiState.value = UiState.Loading
+
         viewModelScope.launch {
-            val result = getStockInfoListUseCase()
-            _stockState.value = result
+            getStockInfoListUseCase()
+                .onSuccess { data ->
+                    _uiState.value = UiState.Success(data)
+                }
+                .onFailure { message, exception ->
+                    val errorMessage = message ?: exception?.message ?: "Unknown error"
+                    _uiState.value = UiState.Error(errorMessage)
+                }
         }
     }
 }
