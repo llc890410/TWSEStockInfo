@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">TWSE Stock Info</string>
     <string name="tool_bar_title">Stock List</string>
+    <string name="opening_price">開盤價</string>
+    <string name="closing_price">收盤價</string>
+    <string name="highest_price">最高價</string>
+    <string name="lowest_price">最低價</string>
+    <string name="change">漲跌價差</string>
+    <string name="monthly_avg_price">月平均價</string>
+    <string name="transaction">成交筆數</string>
+    <string name="trade_volume">成交股數</string>
+    <string name="trade_value">成交金額</string>
 </resources>

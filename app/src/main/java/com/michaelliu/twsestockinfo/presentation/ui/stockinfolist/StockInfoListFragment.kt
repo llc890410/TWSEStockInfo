@@ -10,8 +10,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class StockInfoListFragment : Fragment() {
@@ -20,23 +23,33 @@ class StockInfoListFragment : Fragment() {
     private var _binding: FragmentStockInfoListBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var stockInfoListAdapter: StockInfoListAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStockInfoListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         collectUiState()
 
         viewModel.loadStockInfoList()
-
-        return binding.root
     }
 
     private fun setupRecyclerView() {
-
+        stockInfoListAdapter = StockInfoListAdapter { stockInfo ->
+            Timber.d("onClickItem : ${stockInfo.code} ${stockInfo.name}")
+        }
+        binding.stockListRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = stockInfoListAdapter
+        }
     }
 
     private fun collectUiState() {
@@ -54,6 +67,7 @@ class StockInfoListFragment : Fragment() {
                             binding.stockListRecyclerView.visibility = View.VISIBLE
                             binding.tvErrorMessage.visibility = View.GONE
                             val stockInfoList = uiState.data
+                            stockInfoListAdapter.submitList(stockInfoList)
                         }
                         is UiState.Error -> {
                             binding.progressIndicator.visibility = View.GONE
