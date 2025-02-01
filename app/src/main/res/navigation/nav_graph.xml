@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/stockInfoListFragment">
+
+    <fragment
+        android:id="@+id/stockInfoListFragment"
+        android:name="com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.StockInfoListFragment"
+        android:label="@string/stock_info_list"
+        tools:layout="@layout/fragment_stock_info_list" />
+</navigation>

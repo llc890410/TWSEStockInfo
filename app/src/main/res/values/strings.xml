@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">TWSE Stock Info</string>
+    <string name="app_name">台股資訊</string>
+    <string name="stock_info_list">股票資訊列表</string>
+    <string name="menu_icon_filter">篩選</string>
+    <string name="sort_type_by_code_desc">依股票代號降序</string>
+    <string name="sort_type_by_code_asc">依股票代號升序</string>
+    <string name="opening_price">開盤價</string>
+    <string name="closing_price">收盤價</string>
+    <string name="highest_price">最高價</string>
+    <string name="lowest_price">最低價</string>
+    <string name="change">漲跌價差</string>
+    <string name="monthly_avg_price">月平均價</string>
+    <string name="transaction">成交筆數</string>
+    <string name="trade_volume">成交股數</string>
+    <string name="trade_value">成交金額</string>
 </resources>
