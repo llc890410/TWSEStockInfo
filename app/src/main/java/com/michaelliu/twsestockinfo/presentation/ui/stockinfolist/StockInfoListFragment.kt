@@ -11,6 +11,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -45,6 +47,7 @@ class StockInfoListFragment : Fragment() {
     private fun setupRecyclerView() {
         stockInfoListAdapter = StockInfoListAdapter { stockInfo ->
             Timber.d("onClickItem : ${stockInfo.code} ${stockInfo.name}")
+            showStockInfoDetail(stockInfo)
         }
         binding.stockListRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -80,6 +83,23 @@ class StockInfoListFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun showStockInfoDetail(stockInfo: StockInfo) {
+        val title = "${stockInfo.code} ${stockInfo.name}"
+        val message = """
+            本益比：${stockInfo.peRatio ?: "-"}
+            殖利率(%)：${stockInfo.dividendYield ?: "-"}
+            股價淨值比：${stockInfo.pbRatio ?: "-"}
+        """.trimIndent()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("確定") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onDestroyView() {
