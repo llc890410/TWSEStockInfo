@@ -2,6 +2,8 @@
     <string name="app_name">台股資訊</string>
     <string name="stock_info_list">股票資訊列表</string>
     <string name="menu_icon_filter">篩選</string>
+    <string name="sort_type_by_code_desc">依股票代號降序</string>
+    <string name="sort_type_by_code_asc">依股票代號升序</string>
     <string name="opening_price">開盤價</string>
     <string name="closing_price">收盤價</string>
     <string name="highest_price">最高價</string>

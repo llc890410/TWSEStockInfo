@@ -80,8 +80,15 @@ class StockInfoListFragment : Fragment() {
                             binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.VISIBLE
                             binding.tvErrorMessage.visibility = View.GONE
+
+                            // 因為台股商品數量太大 若直接submit排序過後list 會造成DiffUtil計算負擔
+                            // 所以因應這個問題 這邊直接submit null 強制清空list 不讓DiffUtil做多餘計算
+                            stockInfoListAdapter.submitList(null)
+
                             val stockInfoList = uiState.data
-                            stockInfoListAdapter.submitList(stockInfoList)
+                            stockInfoListAdapter.submitList(stockInfoList) {
+                                binding.stockListRecyclerView.scrollToPosition(0)
+                            }
                         }
                         is UiState.Error -> {
                             binding.progressIndicator.visibility = View.GONE
@@ -114,7 +121,12 @@ class StockInfoListFragment : Fragment() {
     }
 
     fun showSortTypeBottomSheet() {
-
+        val bottomSheet = SortTypeBottomSheet(
+            viewModel.getCurrentSortType()
+        ) { selectedType ->
+            viewModel.sortStockList(selectedType)
+        }
+        bottomSheet.show(parentFragmentManager, "SortTypeBottomSheet")
     }
 
     private val stockInfoListMenuProvider = object : MenuProvider {
