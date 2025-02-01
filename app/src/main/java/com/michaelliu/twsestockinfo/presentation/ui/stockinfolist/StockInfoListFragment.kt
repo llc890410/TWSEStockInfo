@@ -2,8 +2,12 @@ package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
 import androidx.fragment.app.viewModels
@@ -12,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +47,12 @@ class StockInfoListFragment : Fragment() {
         collectUiState()
 
         viewModel.loadStockInfoList()
+        requireActivity().addMenuProvider(stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupRecyclerView() {
@@ -69,8 +80,15 @@ class StockInfoListFragment : Fragment() {
                             binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.VISIBLE
                             binding.tvErrorMessage.visibility = View.GONE
+
+                            // 因為台股商品數量太大 若直接submit排序過後list 會造成DiffUtil計算負擔
+                            // 所以因應這個問題 這邊直接submit null 強制清空list 不讓DiffUtil做多餘計算
+                            stockInfoListAdapter.submitList(null)
+
                             val stockInfoList = uiState.data
-                            stockInfoListAdapter.submitList(stockInfoList)
+                            stockInfoListAdapter.submitList(stockInfoList) {
+                                binding.stockListRecyclerView.scrollToPosition(0)
+                            }
                         }
                         is UiState.Error -> {
                             binding.progressIndicator.visibility = View.GONE
@@ -102,9 +120,29 @@ class StockInfoListFragment : Fragment() {
             .show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    fun showSortTypeBottomSheet() {
+        val bottomSheet = SortTypeBottomSheet(
+            viewModel.getCurrentSortType()
+        ) { selectedType ->
+            viewModel.sortStockList(selectedType)
+        }
+        bottomSheet.show(parentFragmentManager, "SortTypeBottomSheet")
+    }
+
+    private val stockInfoListMenuProvider = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.menu_stock_info_list, menu)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            return when (menuItem.itemId) {
+                R.id.action_filter -> {
+                    showSortTypeBottomSheet()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
 }
