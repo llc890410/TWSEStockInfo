@@ -36,9 +36,10 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideStockRepository(
-        remoteDataSource: RemoteDataSource
+        remoteDataSource: RemoteDataSource,
+        localDataSource: LocalDataSource
     ): StockRepository {
-        return StockRepositoryImpl(remoteDataSource)
+        return StockRepositoryImpl(remoteDataSource, localDataSource)
     }
 
     @Provides

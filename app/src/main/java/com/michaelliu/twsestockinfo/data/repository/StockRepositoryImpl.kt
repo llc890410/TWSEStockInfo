@@ -1,10 +1,13 @@
 package com.michaelliu.twsestockinfo.data.repository
 
+import com.michaelliu.twsestockinfo.data.local.LocalDataSource
 import com.michaelliu.twsestockinfo.data.remote.RemoteDataSource
 import com.michaelliu.twsestockinfo.data.remote.dto.BwiBbuDto
 import com.michaelliu.twsestockinfo.data.remote.dto.StockDayAvgDto
 import com.michaelliu.twsestockinfo.data.remote.dto.StockDayDto
-import com.michaelliu.twsestockinfo.data.remote.mapper.StockInfoMapper
+import com.michaelliu.twsestockinfo.data.mapper.StockInfoMapper
+import com.michaelliu.twsestockinfo.data.mapper.toDomain
+import com.michaelliu.twsestockinfo.data.mapper.toEntity
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.repository.StockRepository
 import com.michaelliu.twsestockinfo.utils.NetworkResult
@@ -15,7 +18,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class StockRepositoryImpl @Inject constructor(
-    private val remoteDataSource: RemoteDataSource
+    private val remoteDataSource: RemoteDataSource,
+    private val localDataSource: LocalDataSource
 ) : StockRepository {
 
     override suspend fun getStockInfoList(): NetworkResult<List<StockInfo>> =
@@ -30,8 +34,14 @@ class StockRepositoryImpl @Inject constructor(
                 val stockDayResult = stockDayDeferred.await()
 
                 val isAllFailed = listOf(bwiBbuResult, stockDayAvgResult, stockDayResult).all { it is NetworkResult.Failure }
+
                 if (isAllFailed) {
-                    return@supervisorScope NetworkResult.Failure(message = "All Network Requests Failed")
+                    val localList = localDataSource.getAllStocks()
+                    return@supervisorScope if (localList.isNotEmpty()) {
+                        NetworkResult.Success(localList.map { it.toDomain() })
+                    } else {
+                        NetworkResult.Failure(message = "All Network Requests Failed and Local Data is Empty")
+                    }
                 }
 
                 val bwiBbuList = (bwiBbuResult as? NetworkResult.Success)?.data ?: emptyList()
@@ -39,6 +49,12 @@ class StockRepositoryImpl @Inject constructor(
                 val stockDayList = (stockDayResult as? NetworkResult.Success)?.data ?: emptyList()
 
                 val stockInfoList = mergeAllData(bwiBbuList, stockDayAvgList, stockDayList)
+
+                if (stockInfoList.isNotEmpty()) {
+                    localDataSource.deleteAllStocks()
+                    localDataSource.saveStocks(stockInfoList.map { it.toEntity() })
+                }
+
                 NetworkResult.Success(stockInfoList)
             }
         }

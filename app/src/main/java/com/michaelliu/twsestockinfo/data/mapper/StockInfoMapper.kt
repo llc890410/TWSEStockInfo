@@ -1,4 +1,4 @@
-package com.michaelliu.twsestockinfo.data.remote.mapper
+package com.michaelliu.twsestockinfo.data.mapper
 
 import com.michaelliu.twsestockinfo.data.remote.dto.BwiBbuDto
 import com.michaelliu.twsestockinfo.data.remote.dto.StockDayAvgDto

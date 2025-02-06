@@ -13,4 +13,7 @@ interface StockInfoDao {
 
     @Query("SELECT * FROM stock_info")
     suspend fun getAllStocks(): List<StockInfoEntity>
+
+    @Query("DELETE FROM stock_info")
+    suspend fun deleteStocks()
 }
