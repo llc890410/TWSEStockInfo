@@ -2,13 +2,13 @@ package com.michaelliu.twsestockinfo.domain.usecase
 
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.repository.StockRepository
-import com.michaelliu.twsestockinfo.utils.NetworkResult
+import com.michaelliu.twsestockinfo.utils.AppResult
 import javax.inject.Inject
 
 class GetStockInfoListUseCase @Inject constructor(
     private val stockRepository: StockRepository
 ) {
-    suspend operator fun invoke(): NetworkResult<List<StockInfo>> {
+    suspend operator fun invoke(): AppResult<List<StockInfo>> {
         return stockRepository.getStockInfoList()
     }
 }

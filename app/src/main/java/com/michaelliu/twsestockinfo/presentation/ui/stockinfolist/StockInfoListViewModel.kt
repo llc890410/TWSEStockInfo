@@ -32,9 +32,8 @@ class StockInfoListViewModel @Inject constructor(
                     val sortedList = sortList(stockInfoList, currentSortType)
                     _uiState.value = UiState.Success(sortedList)
                 }
-                .onFailure { message, exception ->
-                    val errorMessage = message ?: exception?.message ?: "Unknown error"
-                    _uiState.value = UiState.Error(errorMessage)
+                .onFailure { appError ->
+                    _uiState.value = UiState.Error(appError)
                 }
         }
     }

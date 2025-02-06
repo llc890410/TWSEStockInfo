@@ -19,6 +19,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
+import com.michaelliu.twsestockinfo.utils.AppError
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -94,7 +95,12 @@ class StockInfoListFragment : Fragment() {
                             binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.GONE
                             binding.tvErrorMessage.visibility = View.VISIBLE
-                            val errorMessage = uiState.message
+
+                            val errorMessage = when (uiState.error) {
+                                is AppError.NoDataBothNetworkAndLocal -> "無資料"
+                                is AppError.MaxRetryExceeded -> "網路連線異常"
+                                is AppError.Unknown -> "未知錯誤"
+                            }
                             binding.tvErrorMessage.text = errorMessage
                         }
                     }
