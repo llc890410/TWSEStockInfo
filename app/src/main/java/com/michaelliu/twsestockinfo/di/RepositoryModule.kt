@@ -1,5 +1,7 @@
 package com.michaelliu.twsestockinfo.di
 
+import com.michaelliu.twsestockinfo.data.local.LocalDataSource
+import com.michaelliu.twsestockinfo.data.local.dao.StockInfoDao
 import com.michaelliu.twsestockinfo.data.remote.RemoteDataSource
 import com.michaelliu.twsestockinfo.data.remote.api.StockApiService
 import com.michaelliu.twsestockinfo.data.repository.StockRepositoryImpl
@@ -21,6 +23,14 @@ object RepositoryModule {
         stockApiService: StockApiService
     ): RemoteDataSource {
         return RemoteDataSource(stockApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalDataSource(
+        stockInfoDao: StockInfoDao
+    ): LocalDataSource {
+        return LocalDataSource(stockInfoDao)
     }
 
     @Provides
