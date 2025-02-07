@@ -16,6 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
@@ -48,6 +49,7 @@ class StockInfoListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
+        setupFabScrollToTop()
         collectUiState()
         collectNetworkStatus()
 
@@ -69,6 +71,24 @@ class StockInfoListFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = stockInfoListAdapter
         }
+    }
+
+    private fun setupFabScrollToTop() {
+        binding.fabScrollToTop.setOnClickListener {
+            binding.stockListRecyclerView.smoothScrollToPosition(0)
+        }
+        binding.stockListRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if (firstVisibleItemPosition > 2) {
+                    binding.fabScrollToTop.show()
+                } else {
+                    binding.fabScrollToTop.hide()
+                }
+            }
+        })
     }
 
     private fun collectUiState() {
