@@ -4,6 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/tvNetworkStatusBar"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:background="@color/red"
+        android:gravity="center"
+        android:text="@string/network_disconnected"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressIndicator"
         android:layout_width="wrap_content"
@@ -27,11 +41,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/stockListRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tvNetworkStatusBar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

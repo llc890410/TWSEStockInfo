@@ -12,6 +12,8 @@ import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.repository.StockRepository
 import com.michaelliu.twsestockinfo.utils.AppError
 import com.michaelliu.twsestockinfo.utils.AppResult
+import com.michaelliu.twsestockinfo.utils.NetworkMonitor
+import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
@@ -22,12 +24,22 @@ import javax.inject.Singleton
 @Singleton
 class StockRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource,
-    private val localDataSource: LocalDataSource
+    private val localDataSource: LocalDataSource,
+    private val networkMonitor: NetworkMonitor
 ) : StockRepository {
 
     override suspend fun getStockInfoList(): AppResult<List<StockInfo>> =
         withContext(Dispatchers.IO) {
             supervisorScope {
+                if (networkMonitor.getCurrentNetworkStatus() is NetworkStatus.Unavailable) {
+                    val localList = localDataSource.getAllStocks()
+                    return@supervisorScope if (localList.isNotEmpty()) {
+                        AppResult.Success(localList.map { it.toDomain() })
+                    } else {
+                        AppResult.Failure(AppError.NoDataBothNetworkAndLocal)
+                    }
+                }
+
                 val bwiBbuDeferred = async { remoteDataSource.fetchBwiBbuAll() }
                 val stockDayAvgDeferred = async { remoteDataSource.fetchStockDayAvgAll() }
                 val stockDayDeferred = async { remoteDataSource.fetchStockDayAll() }

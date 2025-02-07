@@ -23,9 +23,11 @@ class NetworkMonitor @Inject constructor(
             override fun onAvailable(network: android.net.Network) {
                 trySend(NetworkStatus.Available)
             }
+
             override fun onLost(network: android.net.Network) {
                 trySend(NetworkStatus.Unavailable)
             }
+
             override fun onUnavailable() {
                 trySend(NetworkStatus.Unavailable)
             }
@@ -56,6 +58,7 @@ class NetworkMonitor @Inject constructor(
 }
 
 sealed class NetworkStatus {
+    data object UnKnown : NetworkStatus()
     data object Available : NetworkStatus()
     data object Unavailable : NetworkStatus()
 }

@@ -19,8 +19,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
-import com.michaelliu.twsestockinfo.utils.AppError
+import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -31,6 +32,7 @@ class StockInfoListFragment : Fragment() {
     private var _binding: FragmentStockInfoListBinding? = null
     private val binding get() = _binding!!
 
+    private var lastNetworkStatus: NetworkStatus = NetworkStatus.UnKnown
     private lateinit var stockInfoListAdapter: StockInfoListAdapter
 
     override fun onCreateView(
@@ -46,6 +48,7 @@ class StockInfoListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         collectUiState()
+        collectNetworkStatus()
 
         viewModel.loadStockInfoList()
         requireActivity().addMenuProvider(stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -78,10 +81,6 @@ class StockInfoListFragment : Fragment() {
                             binding.tvErrorMessage.visibility = View.GONE
                         }
                         is UiState.Success -> {
-                            binding.progressIndicator.visibility = View.GONE
-                            binding.stockListRecyclerView.visibility = View.VISIBLE
-                            binding.tvErrorMessage.visibility = View.GONE
-
                             // 因為台股商品數量太大 若直接submit排序過後list 會造成DiffUtil計算負擔
                             // 所以因應這個問題 這邊直接submit null 強制清空list 不讓DiffUtil做多餘計算
                             stockInfoListAdapter.submitList(null)
@@ -90,20 +89,54 @@ class StockInfoListFragment : Fragment() {
                             stockInfoListAdapter.submitList(stockInfoList) {
                                 binding.stockListRecyclerView.scrollToPosition(0)
                             }
+
+                            binding.progressIndicator.visibility = View.GONE
+                            binding.stockListRecyclerView.visibility = View.VISIBLE
+                            binding.tvErrorMessage.visibility = View.GONE
                         }
                         is UiState.Error -> {
                             binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.GONE
+                            binding.tvErrorMessage.text = getString(R.string.no_data_available)
                             binding.tvErrorMessage.visibility = View.VISIBLE
-
-                            val errorMessage = when (uiState.error) {
-                                is AppError.NoDataBothNetworkAndLocal -> "無資料"
-                                is AppError.MaxRetryExceeded -> "網路連線異常"
-                                is AppError.Unknown -> "未知錯誤"
-                            }
-                            binding.tvErrorMessage.text = errorMessage
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun collectNetworkStatus() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.networkStatus.collect { networkStatus ->
+                    when (networkStatus) {
+                        is NetworkStatus.UnKnown -> {
+                            binding.tvNetworkStatusBar.visibility = View.GONE
+                        }
+                        is NetworkStatus.Available -> {
+                            if (lastNetworkStatus is NetworkStatus.Unavailable) {
+                                binding.tvNetworkStatusBar.text = getString(R.string.network_reconnected)
+                                binding.tvNetworkStatusBar.setBackgroundColor(requireContext().getColor(R.color.green))
+                                binding.tvNetworkStatusBar.visibility = View.VISIBLE
+
+                                lifecycleScope.launch {
+                                    delay(1000L)
+                                    if (viewModel.networkStatus.value is NetworkStatus.Available) {
+                                        binding.tvNetworkStatusBar.visibility = View.GONE
+                                        viewModel.loadStockInfoList()
+                                    }
+                                }
+                            }
+                        }
+                        is NetworkStatus.Unavailable -> {
+                            binding.tvNetworkStatusBar.text = getString(R.string.network_disconnected)
+                            binding.tvNetworkStatusBar.setBackgroundColor(requireContext().getColor(R.color.red))
+                            binding.tvNetworkStatusBar.visibility = View.VISIBLE
+                        }
+                    }
+
+                    lastNetworkStatus = networkStatus
                 }
             }
         }
@@ -112,15 +145,15 @@ class StockInfoListFragment : Fragment() {
     private fun showStockInfoDetail(stockInfo: StockInfo) {
         val title = "${stockInfo.code} ${stockInfo.name}"
         val message = """
-            本益比：${stockInfo.peRatio ?: "-"}
-            殖利率(%)：${stockInfo.dividendYield ?: "-"}
-            股價淨值比：${stockInfo.pbRatio ?: "-"}
+            ${getString(R.string.pe_ratio)}：${stockInfo.peRatio ?: "-"}
+            ${getString(R.string.dividend_yield)}：${stockInfo.dividendYield ?: "-"}
+            ${getString(R.string.pb_ratio)}：${stockInfo.pbRatio ?: "-"}
         """.trimIndent()
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setMessage(message)
-            .setPositiveButton("確定") { dialog, _ ->
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
