@@ -13,6 +13,9 @@ class StockInfoListAdapter(
     private val onItemClicked: (StockInfo) -> Unit
 ) : ListAdapter<StockInfo, StockInfoListAdapter.StockInfoViewHolder>(StockInfoDiffCallback()) {
 
+    private val fastClickInterval = 500L
+    private var lastClickTime = 0L
+
     inner class StockInfoViewHolder(
         private val binding: ItemStockInfoBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -56,6 +59,12 @@ class StockInfoListAdapter(
             )
 
             binding.root.setOnClickListener {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastClickTime < fastClickInterval) {
+                    return@setOnClickListener
+                }
+                lastClickTime = currentTime
+
                 onItemClicked(stockInfo)
             }
         }
