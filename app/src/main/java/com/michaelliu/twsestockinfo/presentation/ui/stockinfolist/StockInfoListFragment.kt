@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
@@ -116,23 +117,29 @@ class StockInfoListFragment : Fragment() {
                         }
                         is NetworkStatus.Available -> {
                             if (lastNetworkStatus is NetworkStatus.Unavailable) {
-                                binding.tvNetworkStatusBar.text = getString(R.string.network_reconnected)
-                                binding.tvNetworkStatusBar.setBackgroundColor(requireContext().getColor(R.color.green))
-                                binding.tvNetworkStatusBar.visibility = View.VISIBLE
+                                binding.tvNetworkStatusBar.post {
+                                    showStatusBarWithAnimation(
+                                        barText = getString(R.string.network_reconnected),
+                                        barColor = getColor(requireContext(), R.color.green)
+                                    )
+                                }
 
                                 lifecycleScope.launch {
                                     delay(1000L)
                                     if (viewModel.networkStatus.value is NetworkStatus.Available) {
-                                        binding.tvNetworkStatusBar.visibility = View.GONE
+                                        hideStatusBarWithAnimation()
                                         viewModel.loadStockInfoList()
                                     }
                                 }
                             }
                         }
                         is NetworkStatus.Unavailable -> {
-                            binding.tvNetworkStatusBar.text = getString(R.string.network_disconnected)
-                            binding.tvNetworkStatusBar.setBackgroundColor(requireContext().getColor(R.color.red))
-                            binding.tvNetworkStatusBar.visibility = View.VISIBLE
+                            binding.tvNetworkStatusBar.post {
+                                showStatusBarWithAnimation(
+                                    barText = getString(R.string.network_disconnected),
+                                    barColor = getColor(requireContext(), R.color.red)
+                                )
+                            }
                         }
                     }
 
@@ -166,6 +173,29 @@ class StockInfoListFragment : Fragment() {
             viewModel.sortStockList(selectedType)
         }
         bottomSheet.show(parentFragmentManager, "SortTypeBottomSheet")
+    }
+
+    private fun showStatusBarWithAnimation(barText: String, barColor: Int) {
+        binding.tvNetworkStatusBar.apply {
+            text = barText
+            setBackgroundColor(barColor)
+            visibility = View.VISIBLE
+            translationY = -height.toFloat()
+            animate()
+                .translationY(0f)
+                .setDuration(300)
+                .start()
+        }
+    }
+
+    private fun hideStatusBarWithAnimation() {
+        binding.tvNetworkStatusBar.animate()
+            .translationY(-binding.tvNetworkStatusBar.height.toFloat())
+            .setDuration(300)
+            .withEndAction {
+                binding.tvNetworkStatusBar.visibility = View.GONE
+            }
+            .start()
     }
 
     private val stockInfoListMenuProvider = object : MenuProvider {

@@ -77,6 +77,9 @@ class StockInfoDiffCallback : DiffUtil.ItemCallback<StockInfo>() {
     }
 
     override fun areContentsTheSame(oldItem: StockInfo, newItem: StockInfo): Boolean {
+        if (oldItem.code != newItem.code) {
+            return false
+        }
         return oldItem == newItem
     }
 }
