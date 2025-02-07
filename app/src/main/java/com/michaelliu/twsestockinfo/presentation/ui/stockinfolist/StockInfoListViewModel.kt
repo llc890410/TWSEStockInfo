@@ -5,18 +5,29 @@ import androidx.lifecycle.viewModelScope
 import com.michaelliu.twsestockinfo.domain.model.SortType
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.usecase.GetStockInfoListUseCase
+import com.michaelliu.twsestockinfo.utils.NetworkMonitor
+import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import com.michaelliu.twsestockinfo.utils.onFailure
 import com.michaelliu.twsestockinfo.utils.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class StockInfoListViewModel @Inject constructor(
+    networkMonitor: NetworkMonitor,
     private val getStockInfoListUseCase: GetStockInfoListUseCase
 ) : ViewModel() {
+
+    val networkStatus = networkMonitor.networkStatus.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = NetworkStatus.UnKnown
+    )
 
     private val _uiState = MutableStateFlow<UiState<List<StockInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<StockInfo>>> = _uiState
@@ -32,9 +43,8 @@ class StockInfoListViewModel @Inject constructor(
                     val sortedList = sortList(stockInfoList, currentSortType)
                     _uiState.value = UiState.Success(sortedList)
                 }
-                .onFailure { message, exception ->
-                    val errorMessage = message ?: exception?.message ?: "Unknown error"
-                    _uiState.value = UiState.Error(errorMessage)
+                .onFailure { appError ->
+                    _uiState.value = UiState.Error(appError)
                 }
         }
     }
