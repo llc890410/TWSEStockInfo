@@ -71,6 +71,7 @@ class StockInfoListFragment : Fragment() {
         binding.stockListRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = stockInfoListAdapter
+            itemAnimator = null // 防止RecyclerView閃一下
         }
         binding.stockListRecyclerView.addItemDecoration(
             SpacingItemDecoration(requireContext(), 24f)
