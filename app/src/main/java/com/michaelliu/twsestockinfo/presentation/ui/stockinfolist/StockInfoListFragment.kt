@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
@@ -57,6 +58,8 @@ class StockInfoListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupSwipeRefreshLayout()
         setupRecyclerView()
         setupFabScrollToTop()
         collectUiState()
@@ -105,6 +108,16 @@ class StockInfoListFragment : Fragment() {
         _binding = null
     }
 
+    private fun setupSwipeRefreshLayout() {
+        binding.swipeRefreshLayout.setColorSchemeColors(
+            MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorPrimary),
+            MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorSecondary)
+        )
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.loadStockInfoList(forceRefresh = true)
+        }
+    }
+
     private fun setupRecyclerView() {
         stockInfoListAdapter = StockInfoListAdapter { stockInfo ->
             Timber.d("onClickItem : ${stockInfo.code} ${stockInfo.name}")
@@ -144,6 +157,7 @@ class StockInfoListFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
+                    binding.swipeRefreshLayout.isRefreshing = false
                     when (uiState) {
                         is UiState.Loading -> {
                             binding.progressIndicator.visibility = View.VISIBLE
