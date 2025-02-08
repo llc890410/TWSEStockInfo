@@ -22,6 +22,7 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
+import com.michaelliu.twsestockinfo.domain.model.SortType
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.SpacingItemDecoration
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
@@ -36,6 +37,7 @@ class StockInfoListFragment : Fragment() {
     companion object {
         const val KEY_RECYCLER_VIEW_STATE = "KEY_RECYCLER_VIEW_STATE"
         const val KEY_FIRST_VISIBLE_POS = "KEY_FIRST_VISIBLE_POS"
+        const val TAG_SORT_TYPE_BOTTOM_SHEET = "TAG_SORT_TYPE_BOTTOM_SHEET"
     }
 
     private val viewModel: StockInfoListViewModel by viewModels()
@@ -59,6 +61,8 @@ class StockInfoListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        dismissExistingBottomSheet()
+
         setupSwipeRefreshLayout()
         setupRecyclerView()
         setupFabScrollToTop()
@@ -68,6 +72,7 @@ class StockInfoListFragment : Fragment() {
         if (viewModel.uiState.value !is UiState.Success) {
             viewModel.loadStockInfoList()
         }
+
         requireActivity().addMenuProvider(stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
@@ -250,12 +255,21 @@ class StockInfoListFragment : Fragment() {
     }
 
     fun showSortTypeBottomSheet() {
-        val bottomSheet = SortTypeBottomSheet(
-            viewModel.getCurrentSortType()
-        ) { selectedType ->
-            viewModel.sortStockList(selectedType)
+        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.getCurrentSortType()).apply {
+            setSortTypeBottomSheetListener(object : SortTypeBottomSheet.SortTypeBottomSheetListener {
+                override fun onSortTypeSelected(sortType: SortType) {
+                    viewModel.sortStockList(sortType)
+                }
+            })
         }
-        bottomSheet.show(parentFragmentManager, "SortTypeBottomSheet")
+        bottomSheet.show(parentFragmentManager, TAG_SORT_TYPE_BOTTOM_SHEET)
+    }
+
+    private fun dismissExistingBottomSheet() {
+        val existingBottomSheet = parentFragmentManager.findFragmentByTag(TAG_SORT_TYPE_BOTTOM_SHEET)
+        if (existingBottomSheet is SortTypeBottomSheet) {
+            existingBottomSheet.dismiss()
+        }
     }
 
     private fun showStatusBarWithAnimation(barText: String, isSuccess: Boolean) {
