@@ -20,17 +20,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tvStockName"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvStockName"
             tools:text="2330" />
 
         <TextView
             android:id="@+id/tvStockName"
-            style="@style/StockInfoHeadlineMedium"
+            style="@style/StockInfoHeadlineSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@+id/tvStockCode"
-            app:layout_constraintTop_toBottomOf="@+id/tvStockCode"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toEndOf="@+id/tvStockCode"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="台積電" />
 
         <TextView
@@ -39,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/opening_price"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvStockName" />
@@ -162,7 +164,7 @@
             style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/transaction"
             app:layout_constraintEnd_toStartOf="@+id/guidelineVertical33"
             app:layout_constraintStart_toStartOf="parent"

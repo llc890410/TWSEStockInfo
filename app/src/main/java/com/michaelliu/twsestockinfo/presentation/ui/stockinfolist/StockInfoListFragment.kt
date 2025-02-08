@@ -1,5 +1,6 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist
 
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
@@ -16,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
@@ -129,13 +131,25 @@ class StockInfoListFragment : Fragment() {
             showStockInfoDetail(stockInfo)
         }
         binding.stockListRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = getRecyclerViewLayoutManager()
             adapter = stockInfoListAdapter
             itemAnimator = null // 防止RecyclerView閃一下
         }
         binding.stockListRecyclerView.addItemDecoration(
-            SpacingItemDecoration(requireContext(), 24f)
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                SpacingItemDecoration(requireContext(), 16f)
+            } else {
+                SpacingItemDecoration(requireContext(), 24f)
+            }
         )
+    }
+
+    private fun getRecyclerViewLayoutManager(): RecyclerView.LayoutManager {
+        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            GridLayoutManager(requireContext(), 2)
+        } else {
+            LinearLayoutManager(requireContext())
+        }
     }
 
     private fun setupFabScrollToTop() {

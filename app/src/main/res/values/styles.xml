@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="StockInfoStockCodeText">
+    <style name="StockInfoHeadlineSmall">
         <item name="android:textAppearance">?attr/textAppearanceHeadlineSmall</item>
         <item name="android:textColor">@color/list_item_text_color</item>
     </style>
 
-    <style name="StockInfoStockNameText">
+    <style name="StockInfoHeadlineMedium">
         <item name="android:textAppearance">?attr/textAppearanceHeadlineMedium</item>
         <item name="android:textColor">@color/list_item_text_color</item>
     </style>
