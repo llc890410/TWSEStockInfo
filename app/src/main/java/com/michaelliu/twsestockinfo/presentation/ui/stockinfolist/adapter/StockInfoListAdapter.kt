@@ -1,11 +1,12 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getColor
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.ItemStockInfoBinding
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 
@@ -20,6 +21,8 @@ class StockInfoListAdapter(
         private val binding: ItemStockInfoBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(stockInfo: StockInfo) {
+            val context = binding.root.context
+
             // 股票代號、名稱
             binding.tvStockCode.text = stockInfo.code
             binding.tvStockName.text = stockInfo.name
@@ -45,17 +48,17 @@ class StockInfoListAdapter(
             val closingPrice = stockInfo.closingPrice ?: 0.0
             val monthlyAvgPrice = stockInfo.monthlyAvgPrice ?: 0.0
             binding.tvClosingPrice.setTextColor(
-                if (closingPrice > monthlyAvgPrice) Color.RED
-                else if (closingPrice < monthlyAvgPrice) Color.GREEN
-                else Color.BLACK
+                if (closingPrice > monthlyAvgPrice) getColor(context, R.color.list_item_text_color_red)
+                else if (closingPrice < monthlyAvgPrice) getColor(context, R.color.list_item_text_color_green)
+                else getColor(context, R.color.list_item_text_color)
             )
 
             // 漲跌價差 > 0 => 紅; 漲跌價差 < 0 => 綠
             val change = stockInfo.change ?: 0.0
             binding.tvChange.setTextColor(
-                if (change > 0) Color.RED
-                else if (change < 0) Color.GREEN
-                else Color.BLACK
+                if (change > 0) getColor(context, R.color.list_item_text_color_red)
+                else if (change < 0) getColor(context, R.color.list_item_text_color_green)
+                else getColor(context, R.color.list_item_text_color)
             )
 
             binding.root.setOnClickListener {

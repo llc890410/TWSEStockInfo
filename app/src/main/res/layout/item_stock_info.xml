@@ -5,10 +5,9 @@
     android:id="@+id/stockCardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp"
+    android:layout_marginHorizontal="24dp"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="8dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,48 +17,40 @@
 
         <TextView
             android:id="@+id/tvStockCode"
+            style="@style/StockInfoStockCodeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="2330" />
 
         <TextView
             android:id="@+id/tvStockName"
+            style="@style/StockInfoStockNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/black"
-            android:textSize="28sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/tvStockCode"
             app:layout_constraintTop_toBottomOf="@+id/tvStockCode"
             tools:text="台積電" />
 
         <TextView
             android:id="@+id/tvOpeningPriceTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/opening_price"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvStockName" />
 
         <TextView
             android:id="@+id/tvOpeningPrice"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/tvOpeningPriceTitle"
             app:layout_constraintEnd_toStartOf="@id/guidelineVertical50"
             app:layout_constraintTop_toTopOf="@id/tvOpeningPriceTitle"
@@ -67,24 +58,21 @@
 
         <TextView
             android:id="@+id/tvClosingPriceTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
             android:text="@string/closing_price"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/tvOpeningPriceTitle"
             app:layout_constraintStart_toStartOf="@id/guidelineVertical50"
             app:layout_constraintTop_toTopOf="@+id/tvOpeningPriceTitle" />
 
         <TextView
             android:id="@+id/tvClosingPrice"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
+            android:layout_marginEnd="16dp"
             app:layout_constraintBottom_toBottomOf="@+id/tvClosingPriceTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tvClosingPriceTitle"
@@ -92,22 +80,19 @@
 
         <TextView
             android:id="@+id/tvHighestPriceTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/highest_price"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/tvOpeningPriceTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvOpeningPriceTitle" />
 
         <TextView
             android:id="@+id/tvHighestPrice"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/tvHighestPriceTitle"
             app:layout_constraintEnd_toEndOf="@+id/tvOpeningPrice"
             app:layout_constraintTop_toTopOf="@id/tvHighestPriceTitle"
@@ -115,22 +100,19 @@
 
         <TextView
             android:id="@+id/tvLowestPriceTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/lowest_price"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/tvClosingPriceTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvClosingPriceTitle" />
 
         <TextView
             android:id="@+id/tvLowestPrice"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/tvLowestPriceTitle"
             app:layout_constraintEnd_toEndOf="@+id/tvClosingPrice"
             app:layout_constraintTop_toTopOf="@id/tvLowestPriceTitle"
@@ -138,22 +120,19 @@
 
         <TextView
             android:id="@+id/tvChangeTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/change"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/tvHighestPriceTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvHighestPriceTitle" />
 
         <TextView
             android:id="@+id/tvChange"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/tvChangeTitle"
             app:layout_constraintEnd_toEndOf="@+id/tvHighestPrice"
             app:layout_constraintTop_toTopOf="@id/tvChangeTitle"
@@ -161,22 +140,19 @@
 
         <TextView
             android:id="@+id/tvMonthlyAvgPriceTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/monthly_avg_price"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/tvLowestPriceTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvLowestPriceTitle" />
 
         <TextView
             android:id="@+id/tvMonthlyAvgPrice"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/tvMonthlyAvgPriceTitle"
             app:layout_constraintEnd_toEndOf="@+id/tvClosingPrice"
             app:layout_constraintTop_toTopOf="@id/tvMonthlyAvgPriceTitle"
@@ -184,24 +160,21 @@
 
         <TextView
             android:id="@+id/tvTransactionTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="@string/transaction"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/guidelineVertical33"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvChangeTitle" />
 
         <TextView
             android:id="@+id/tvTransaction"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@+id/tvTransactionTitle"
             app:layout_constraintStart_toStartOf="@+id/tvTransactionTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvTransactionTitle"
@@ -209,13 +182,11 @@
 
         <TextView
             android:id="@+id/tvTradeVolumeTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="@string/trade_volume"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/tvTransactionTitle"
             app:layout_constraintEnd_toStartOf="@+id/guidelineVertical67"
             app:layout_constraintStart_toEndOf="@+id/guidelineVertical33"
@@ -223,11 +194,10 @@
 
         <TextView
             android:id="@+id/tvTradeVolume"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@+id/tvTradeVolumeTitle"
             app:layout_constraintStart_toStartOf="@+id/tvTradeVolumeTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvTradeVolumeTitle"
@@ -235,13 +205,11 @@
 
         <TextView
             android:id="@+id/tvTradeValueTitle"
+            style="@style/StockInfoTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="@string/trade_value"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/tvTransactionTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/guidelineVertical67"
@@ -249,11 +217,10 @@
 
         <TextView
             android:id="@+id/tvTradeValue"
+            style="@style/StockInfoContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@+id/tvTradeValueTitle"
             app:layout_constraintStart_toStartOf="@+id/tvTradeValueTitle"
             app:layout_constraintTop_toBottomOf="@+id/tvTradeValueTitle"

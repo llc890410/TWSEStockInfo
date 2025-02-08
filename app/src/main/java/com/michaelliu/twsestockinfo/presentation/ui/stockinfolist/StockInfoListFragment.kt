@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
+import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.SpacingItemDecoration
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
 import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,6 +72,9 @@ class StockInfoListFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = stockInfoListAdapter
         }
+        binding.stockListRecyclerView.addItemDecoration(
+            SpacingItemDecoration(requireContext(), 24f)
+        )
     }
 
     private fun setupFabScrollToTop() {
@@ -140,7 +144,7 @@ class StockInfoListFragment : Fragment() {
                                 binding.tvNetworkStatusBar.post {
                                     showStatusBarWithAnimation(
                                         barText = getString(R.string.network_reconnected),
-                                        barColor = getColor(requireContext(), R.color.green)
+                                        isSuccess = true
                                     )
                                 }
 
@@ -157,7 +161,7 @@ class StockInfoListFragment : Fragment() {
                             binding.tvNetworkStatusBar.post {
                                 showStatusBarWithAnimation(
                                     barText = getString(R.string.network_disconnected),
-                                    barColor = getColor(requireContext(), R.color.red)
+                                    isSuccess = false
                                 )
                             }
                         }
@@ -195,10 +199,16 @@ class StockInfoListFragment : Fragment() {
         bottomSheet.show(parentFragmentManager, "SortTypeBottomSheet")
     }
 
-    private fun showStatusBarWithAnimation(barText: String, barColor: Int) {
+    private fun showStatusBarWithAnimation(barText: String, isSuccess: Boolean) {
         binding.tvNetworkStatusBar.apply {
             text = barText
-            setBackgroundColor(barColor)
+            if (isSuccess) {
+                setTextColor(getColor(requireContext(), R.color.status_bar_success_text_color))
+                setBackgroundColor(getColor(requireContext(), R.color.status_bar_success_background_color))
+            } else {
+                setTextColor(getColor(requireContext(), R.color.status_bar_error_text_color))
+                setBackgroundColor(getColor(requireContext(), R.color.status_bar_error_background_color))
+            }
             visibility = View.VISIBLE
             translationY = -height.toFloat()
             animate()

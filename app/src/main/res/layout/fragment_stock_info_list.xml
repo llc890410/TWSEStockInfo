@@ -8,10 +8,10 @@
         android:id="@+id/tvNetworkStatusBar"
         android:layout_width="0dp"
         android:layout_height="20dp"
-        android:background="@color/red"
+        android:background="@color/status_bar_error_background_color"
         android:gravity="center"
         android:text="@string/network_disconnected"
-        android:textColor="@color/white"
+        android:textColor="@color/status_bar_error_text_color"
         android:textSize="12sp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -54,9 +54,11 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:contentDescription="@string/scroll_to_top"
-        android:src="@android:drawable/ic_menu_upload"
+        android:src="@drawable/icon_to_top"
         android:visibility="gone"
+        app:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="?attr/colorOnPrimary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

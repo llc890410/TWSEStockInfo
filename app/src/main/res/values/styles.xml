@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="StockInfoStockCodeText">
+        <item name="android:textAppearance">?attr/textAppearanceHeadlineSmall</item>
+        <item name="android:textColor">@color/list_item_text_color</item>
+    </style>
+
+    <style name="StockInfoStockNameText">
+        <item name="android:textAppearance">?attr/textAppearanceHeadlineMedium</item>
+        <item name="android:textColor">@color/list_item_text_color</item>
+    </style>
+
+    <style name="StockInfoTitleText">
+        <item name="android:textAppearance">?attr/textAppearanceTitleMedium</item>
+        <item name="android:textColor">@color/list_item_text_color</item>
+    </style>
+
+    <style name="StockInfoContentText">
+        <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
+        <item name="android:textColor">@color/list_item_text_color</item>
+    </style>
+</resources>
