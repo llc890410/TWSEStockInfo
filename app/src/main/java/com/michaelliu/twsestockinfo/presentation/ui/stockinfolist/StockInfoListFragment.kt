@@ -1,6 +1,8 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist
 
+import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -10,7 +12,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.michaelliu.twsestockinfo.R
+import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.SpacingItemDecoration
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
@@ -30,6 +32,10 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class StockInfoListFragment : Fragment() {
+    companion object {
+        const val KEY_RECYCLER_VIEW_STATE = "KEY_RECYCLER_VIEW_STATE"
+        const val KEY_FIRST_VISIBLE_POS = "KEY_FIRST_VISIBLE_POS"
+    }
 
     private val viewModel: StockInfoListViewModel by viewModels()
     private var _binding: FragmentStockInfoListBinding? = null
@@ -37,6 +43,8 @@ class StockInfoListFragment : Fragment() {
 
     private var lastNetworkStatus: NetworkStatus = NetworkStatus.UnKnown
     private lateinit var stockInfoListAdapter: StockInfoListAdapter
+
+    private var recyclerViewState: Parcelable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,8 +62,42 @@ class StockInfoListFragment : Fragment() {
         collectUiState()
         collectNetworkStatus()
 
-        viewModel.loadStockInfoList()
+        if (viewModel.uiState.value !is UiState.Success) {
+            viewModel.loadStockInfoList()
+        }
         requireActivity().addMenuProvider(stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        // 不確定為何在 onViewStateRestored 讓 layoutManager RestoreInstanceState 會沒效果
+        // 故先在這邊將 recyclerViewState 取出，在 onPause 時再 RestoreInstanceState
+        recyclerViewState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            savedInstanceState?.getParcelable(KEY_RECYCLER_VIEW_STATE, Parcelable::class.java)
+        } else {
+            savedInstanceState?.getParcelable(KEY_RECYCLER_VIEW_STATE)
+        }
+
+        val firstVisibleItemPosition = savedInstanceState?.getInt("KEY_FIRST_VISIBLE_POS", -1) ?: -1
+        setFabVisibility(firstVisibleItemPosition)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        recyclerViewState?.let {
+            binding.stockListRecyclerView.layoutManager?.onRestoreInstanceState(it)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val layoutManager = binding.stockListRecyclerView.layoutManager as LinearLayoutManager
+        val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+        outState.putInt(KEY_FIRST_VISIBLE_POS, firstVisibleItemPosition)
+
+        val recyclerViewState: Parcelable? = binding.stockListRecyclerView.layoutManager?.onSaveInstanceState()
+        outState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerViewState)
     }
 
     override fun onDestroyView() {
@@ -85,15 +127,17 @@ class StockInfoListFragment : Fragment() {
         binding.stockListRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
-                if (firstVisibleItemPosition > 2) {
-                    binding.fabScrollToTop.show()
-                } else {
-                    binding.fabScrollToTop.hide()
-                }
+                setFabVisibility(layoutManager.findFirstVisibleItemPosition())
             }
         })
+    }
+
+    private fun setFabVisibility(firstVisibleItemPosition: Int) {
+        if (firstVisibleItemPosition > 2) {
+            binding.fabScrollToTop.show()
+        } else {
+            binding.fabScrollToTop.hide()
+        }
     }
 
     private fun collectUiState() {
@@ -153,7 +197,7 @@ class StockInfoListFragment : Fragment() {
                                     delay(1000L)
                                     if (viewModel.networkStatus.value is NetworkStatus.Available) {
                                         hideStatusBarWithAnimation()
-                                        viewModel.loadStockInfoList()
+                                        viewModel.loadStockInfoList(true)
                                     }
                                 }
                             }
