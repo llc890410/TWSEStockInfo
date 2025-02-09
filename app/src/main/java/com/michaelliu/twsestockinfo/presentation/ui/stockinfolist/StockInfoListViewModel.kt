@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.michaelliu.twsestockinfo.domain.model.SortType
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
+import com.michaelliu.twsestockinfo.domain.repository.UserPreferencesRepository
 import com.michaelliu.twsestockinfo.domain.usecase.GetStockInfoListUseCase
 import com.michaelliu.twsestockinfo.utils.NetworkMonitor
 import com.michaelliu.twsestockinfo.utils.onFailure
@@ -19,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class StockInfoListViewModel @Inject constructor(
     networkMonitor: NetworkMonitor,
-    private val getStockInfoListUseCase: GetStockInfoListUseCase
+    private val getStockInfoListUseCase: GetStockInfoListUseCase,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     val networkStatus = networkMonitor.networkStatus.stateIn(
@@ -31,9 +33,27 @@ class StockInfoListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState<List<StockInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<StockInfo>>> = _uiState
 
-    private var _currentSortType = SortType.BY_CODE_DESC
-    val currentSortType: SortType get() = _currentSortType
-    
+    val currentSortType: StateFlow<SortType> = userPreferencesRepository.sortTypeFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = SortType.BY_CODE_DESC
+    )
+
+    init {
+        observeSortType()
+    }
+
+    private fun observeSortType() {
+        viewModelScope.launch {
+            currentSortType.collect { sortType ->
+                val currentState = _uiState.value
+                if (currentState is UiState.Success) {
+                    _uiState.value = UiState.Success(currentState.data.sortedByType(sortType))
+                }
+            }
+        }
+    }
+
     fun loadStockInfoList(forceRefresh: Boolean = false) {
         if (!forceRefresh && _uiState.value is UiState.Success) {
             return
@@ -44,7 +64,7 @@ class StockInfoListViewModel @Inject constructor(
         viewModelScope.launch {
             getStockInfoListUseCase()
                 .onSuccess { stockInfoList ->
-                    _uiState.value = UiState.Success(stockInfoList.sortedByType(currentSortType))
+                    _uiState.value = UiState.Success(stockInfoList.sortedByType(currentSortType.value))
                 }
                 .onFailure { appError ->
                     _uiState.value = UiState.Error(appError)
@@ -53,10 +73,8 @@ class StockInfoListViewModel @Inject constructor(
     }
 
     fun sortStockList(sortType: SortType) {
-        _currentSortType = sortType
-        val currentState = _uiState.value
-        if (currentState is UiState.Success) {
-            _uiState.value = UiState.Success(currentState.data.sortedByType(currentSortType))
+        viewModelScope.launch {
+            userPreferencesRepository.saveSortType(sortType)
         }
     }
 
