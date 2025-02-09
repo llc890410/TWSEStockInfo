@@ -17,16 +17,13 @@ class StockInfoListAdapter(
 ) : ListAdapter<StockInfo, ViewHolder>(StockInfoDiffCallback()) {
 
     companion object {
-        private const val FAST_CLICK_INTERVAL = 500L
-
         private const val VIEW_TYPE_SHIMMER = 0
         private const val VIEW_TYPE_ITEM = 1
-
         private const val SHIMMER_ITEM_COUNT = 10
+        private const val FAST_CLICK_INTERVAL = 500L
     }
 
     private var isShimmer = false
-    private var lastClickTime = 0L
 
     @SuppressLint("NotifyDataSetChanged")
     fun showShimmer(show: Boolean) {
@@ -37,74 +34,58 @@ class StockInfoListAdapter(
     inner class StockInfoViewHolder(
         private val binding: ItemStockInfoBinding
     ) : ViewHolder(binding.root) {
-        fun bind(stockInfo: StockInfo) {
-            val context = binding.root.context
+        private var lastClickTime = 0L
 
-            // 股票代號、名稱
-            binding.tvStockCode.text = stockInfo.code
-            binding.tvStockName.text = stockInfo.name
+        fun bind(stockInfo: StockInfo) = with(binding) {
+            tvStockCode.text = stockInfo.code
+            tvStockName.text = stockInfo.name
+            tvOpeningPrice.text = stockInfo.openingPrice?.toString() ?: "-"
+            tvClosingPrice.text = stockInfo.closingPrice?.toString() ?: "-"
+            tvHighestPrice.text = stockInfo.highestPrice?.toString() ?: "-"
+            tvLowestPrice.text = stockInfo.lowestPrice?.toString() ?: "-"
+            tvChange.text = stockInfo.change?.toString() ?: "-"
+            tvMonthlyAvgPrice.text = stockInfo.monthlyAvgPrice?.toString() ?: "-"
+            tvTransaction.text = stockInfo.transaction?.toString() ?: "-"
+            tvTradeVolume.text = stockInfo.tradeVolume?.toString() ?: "-"
+            tvTradeValue.text = stockInfo.tradeValue?.toString() ?: "-"
 
-            // 開盤、收盤
-            binding.tvOpeningPrice.text = stockInfo.openingPrice?.toString() ?: "-"
-            binding.tvClosingPrice.text = stockInfo.closingPrice?.toString() ?: "-"
+            tvClosingPrice.setTextColor(getClosingPriceColor(stockInfo))
+            tvChange.setTextColor(getChangeColor(stockInfo))
 
-            // 最高、最低
-            binding.tvHighestPrice.text = stockInfo.highestPrice?.toString() ?: "-"
-            binding.tvLowestPrice.text = stockInfo.lowestPrice?.toString() ?: "-"
-
-            // 漲跌、月平均
-            binding.tvChange.text = stockInfo.change?.toString() ?: "-"
-            binding.tvMonthlyAvgPrice.text = stockInfo.monthlyAvgPrice?.toString() ?: "-"
-
-            // 成交比數、成交股數、成交金額
-            binding.tvTransaction.text = stockInfo.transaction?.toString() ?: "-"
-            binding.tvTradeVolume.text = stockInfo.tradeVolume?.toString() ?: "-"
-            binding.tvTradeValue.text = stockInfo.tradeValue?.toString() ?: "-"
-
-            // 收盤 > 月平均 => 紅; 收盤 < 月平均 => 綠
-            val closingPrice = stockInfo.closingPrice ?: 0.0
-            val monthlyAvgPrice = stockInfo.monthlyAvgPrice ?: 0.0
-            binding.tvClosingPrice.setTextColor(
-                if (closingPrice > monthlyAvgPrice) getColor(context, R.color.list_item_text_color_red)
-                else if (closingPrice < monthlyAvgPrice) getColor(context, R.color.list_item_text_color_green)
-                else getColor(context, R.color.list_item_text_color)
-            )
-
-            // 漲跌價差 > 0 => 紅; 漲跌價差 < 0 => 綠
-            val change = stockInfo.change ?: 0.0
-            binding.tvChange.setTextColor(
-                if (change > 0) getColor(context, R.color.list_item_text_color_red)
-                else if (change < 0) getColor(context, R.color.list_item_text_color_green)
-                else getColor(context, R.color.list_item_text_color)
-            )
-
-            binding.root.setOnClickListener {
-                val currentTime = System.currentTimeMillis()
-                if (currentTime - lastClickTime < FAST_CLICK_INTERVAL) {
-                    return@setOnClickListener
+            root.setOnClickListener {
+                if (System.currentTimeMillis() - lastClickTime >= FAST_CLICK_INTERVAL) {
+                    lastClickTime = System.currentTimeMillis()
+                    onItemClicked(stockInfo)
                 }
-                lastClickTime = currentTime
-
-                onItemClicked(stockInfo)
             }
         }
+
+        private fun getClosingPriceColor(stockInfo: StockInfo) = getColor(
+            // 收盤 > 月平均 => 紅; 收盤 < 月平均 => 綠
+            binding.root.context, when {
+                (stockInfo.closingPrice ?: 0.0) > (stockInfo.monthlyAvgPrice ?: 0.0) ->
+                    R.color.list_item_text_color_red
+                (stockInfo.closingPrice ?: 0.0) < (stockInfo.monthlyAvgPrice ?: 0.0) ->
+                    R.color.list_item_text_color_green
+                else -> R.color.list_item_text_color
+            }
+        )
+
+        private fun getChangeColor(stockInfo: StockInfo) = getColor(
+            // 漲跌價差 > 0 => 紅; 漲跌價差 < 0 => 綠
+            binding.root.context, when {
+                (stockInfo.change ?: 0.0) > 0 -> R.color.list_item_text_color_red
+                (stockInfo.change ?: 0.0) < 0 -> R.color.list_item_text_color_green
+                else -> R.color.list_item_text_color
+            }
+        )
     }
 
-    inner class ShimmerViewHolder(
-        binding: ItemStockInfoShimmerBinding
-    ) : ViewHolder(binding.root)
+    inner class ShimmerViewHolder(binding: ItemStockInfoShimmerBinding) : ViewHolder(binding.root)
 
-    override fun getItemViewType(position: Int): Int {
-        return if (isShimmer) VIEW_TYPE_SHIMMER else VIEW_TYPE_ITEM
-    }
+    override fun getItemViewType(position: Int) = if (isShimmer) VIEW_TYPE_SHIMMER else VIEW_TYPE_ITEM
 
-    override fun getItemCount(): Int {
-        return if (isShimmer) {
-            SHIMMER_ITEM_COUNT
-        } else {
-            super.getItemCount()
-        }
-    }
+    override fun getItemCount() = if (isShimmer) SHIMMER_ITEM_COUNT else super.getItemCount()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -129,14 +110,6 @@ class StockInfoListAdapter(
 }
 
 class StockInfoDiffCallback : DiffUtil.ItemCallback<StockInfo>() {
-    override fun areItemsTheSame(oldItem: StockInfo, newItem: StockInfo): Boolean {
-        return oldItem.code == newItem.code
-    }
-
-    override fun areContentsTheSame(oldItem: StockInfo, newItem: StockInfo): Boolean {
-        if (oldItem.code != newItem.code) {
-            return false
-        }
-        return oldItem == newItem
-    }
+    override fun areItemsTheSame(oldItem: StockInfo, newItem: StockInfo) = oldItem.code == newItem.code
+    override fun areContentsTheSame(oldItem: StockInfo, newItem: StockInfo) = oldItem == newItem
 }

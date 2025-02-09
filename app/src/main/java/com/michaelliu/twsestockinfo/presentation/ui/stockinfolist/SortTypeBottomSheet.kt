@@ -18,13 +18,10 @@ class SortTypeBottomSheet : BottomSheetDialogFragment() {
     companion object {
         private const val ARG_SORT_TYPE = "ARG_SORT_TYPE"
 
-        fun newInstance(selectedSortType: SortType): SortTypeBottomSheet {
-            val fragment = SortTypeBottomSheet()
-            val args = Bundle().apply {
+        fun newInstance(selectedSortType: SortType) = SortTypeBottomSheet().apply {
+            arguments = Bundle().apply {
                 putString(ARG_SORT_TYPE, selectedSortType.name)
             }
-            fragment.arguments = args
-            return fragment
         }
     }
 
@@ -33,8 +30,8 @@ class SortTypeBottomSheet : BottomSheetDialogFragment() {
     private var listener: SortTypeBottomSheetListener? = null
 
     private val selectedSortType: SortType by lazy {
-        val typeName = arguments?.getString(ARG_SORT_TYPE, SortType.BY_CODE_DESC.name)
-        SortType.valueOf(typeName ?: SortType.BY_CODE_DESC.name)
+        val typeName = arguments?.getString(ARG_SORT_TYPE)
+        enumValues<SortType>().firstOrNull { it.name == typeName } ?: SortType.BY_CODE_DESC
     }
 
     fun setSortTypeBottomSheetListener(listener: SortTypeBottomSheetListener) {
@@ -54,28 +51,31 @@ class SortTypeBottomSheet : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         dialog?.setOnShowListener { dialogInterface ->
-            val bottomSheetDialog = dialogInterface as BottomSheetDialog
-            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            val bottomSheetDialog = dialogInterface as? BottomSheetDialog
+            val bottomSheet = bottomSheetDialog?.findViewById<View>(
+                com.google.android.material.R.id.design_bottom_sheet
+            )
 
-            bottomSheet?.post {
-                val behavior = BottomSheetBehavior.from(bottomSheet)
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED // 強制展開全部
+            bottomSheet?.let {
+                BottomSheetBehavior.from(it).state = BottomSheetBehavior.STATE_EXPANDED
             }
         }
 
-        when (selectedSortType) {
-            SortType.BY_CODE_DESC -> binding.rbCodeDesc.isChecked = true
-            SortType.BY_CODE_ASC -> binding.rbCodeAsc.isChecked = true
-        }
-
-        binding.rgSortOptions.setOnCheckedChangeListener { _, checkedId ->
-            val newType = when (checkedId) {
-                binding.rbCodeDesc.id -> SortType.BY_CODE_DESC
-                binding.rbCodeAsc.id -> SortType.BY_CODE_ASC
-                else -> SortType.BY_CODE_DESC
+        binding.apply {
+            when (selectedSortType) {
+                SortType.BY_CODE_DESC -> rbCodeDesc.isChecked = true
+                SortType.BY_CODE_ASC -> rbCodeAsc.isChecked = true
             }
-            listener?.onSortTypeSelected(newType)
-            dismiss()
+
+            rgSortOptions.setOnCheckedChangeListener { _, checkedId ->
+                val newType = when (checkedId) {
+                    binding.rbCodeDesc.id -> SortType.BY_CODE_DESC
+                    binding.rbCodeAsc.id -> SortType.BY_CODE_ASC
+                    else -> SortType.BY_CODE_DESC
+                }
+                listener?.onSortTypeSelected(newType)
+                dismiss()
+            }
         }
     }
 

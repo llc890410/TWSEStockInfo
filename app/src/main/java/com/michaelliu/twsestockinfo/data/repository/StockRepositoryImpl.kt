@@ -66,8 +66,7 @@ class StockRepositoryImpl @Inject constructor(
                 val stockInfoList = mergeAllData(bwiBbuList, stockDayAvgList, stockDayList)
 
                 if (stockInfoList.isNotEmpty()) {
-                    localDataSource.deleteAllStocks()
-                    localDataSource.saveStocks(stockInfoList.map { it.toEntity() })
+                    localDataSource.refreshStocks(stockInfoList.map { it.toEntity() })
                 }
 
                 AppResult.Success(stockInfoList)

@@ -32,7 +32,6 @@ import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class StockInfoListFragment : Fragment() {
@@ -47,8 +46,19 @@ class StockInfoListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var lastNetworkStatus: NetworkStatus = NetworkStatus.UnKnown
-    private lateinit var stockInfoListAdapter: StockInfoListAdapter
 
+    private val stockInfoListAdapter: StockInfoListAdapter by lazy {
+        StockInfoListAdapter { stockInfo ->
+            showStockInfoDetail(stockInfo)
+        }
+    }
+    private val recyclerViewLayoutManager: RecyclerView.LayoutManager by lazy {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            GridLayoutManager(requireContext(), 2)
+        } else {
+            LinearLayoutManager(requireContext())
+        }
+    }
     private var recyclerViewState: Parcelable? = null
 
     override fun onCreateView(
@@ -126,12 +136,8 @@ class StockInfoListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        stockInfoListAdapter = StockInfoListAdapter { stockInfo ->
-            Timber.d("onClickItem : ${stockInfo.code} ${stockInfo.name}")
-            showStockInfoDetail(stockInfo)
-        }
         binding.stockListRecyclerView.apply {
-            layoutManager = getRecyclerViewLayoutManager()
+            layoutManager = recyclerViewLayoutManager
             adapter = stockInfoListAdapter
             itemAnimator = null // 防止RecyclerView閃一下
         }
@@ -142,14 +148,6 @@ class StockInfoListFragment : Fragment() {
                 SpacingItemDecoration(requireContext(), 24f)
             }
         )
-    }
-
-    private fun getRecyclerViewLayoutManager(): RecyclerView.LayoutManager {
-        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            GridLayoutManager(requireContext(), 2)
-        } else {
-            LinearLayoutManager(requireContext())
-        }
     }
 
     private fun setupFabScrollToTop() {
@@ -173,7 +171,7 @@ class StockInfoListFragment : Fragment() {
     }
 
     private fun collectUiState() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
                     binding.swipeRefreshLayout.isRefreshing = false
@@ -269,7 +267,7 @@ class StockInfoListFragment : Fragment() {
     }
 
     fun showSortTypeBottomSheet() {
-        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.getCurrentSortType()).apply {
+        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.currentSortType).apply {
             setSortTypeBottomSheetListener(object : SortTypeBottomSheet.SortTypeBottomSheetListener {
                 override fun onSortTypeSelected(sortType: SortType) {
                     viewModel.sortStockList(sortType)
