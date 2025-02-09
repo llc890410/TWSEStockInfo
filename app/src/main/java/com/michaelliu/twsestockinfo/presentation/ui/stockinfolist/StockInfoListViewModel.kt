@@ -6,7 +6,6 @@ import com.michaelliu.twsestockinfo.domain.model.SortType
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 import com.michaelliu.twsestockinfo.domain.usecase.GetStockInfoListUseCase
 import com.michaelliu.twsestockinfo.utils.NetworkMonitor
-import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import com.michaelliu.twsestockinfo.utils.onFailure
 import com.michaelliu.twsestockinfo.utils.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,13 +25,14 @@ class StockInfoListViewModel @Inject constructor(
     val networkStatus = networkMonitor.networkStatus.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = NetworkStatus.UnKnown
+        initialValue = networkMonitor.getCurrentNetworkStatus()
     )
 
     private val _uiState = MutableStateFlow<UiState<List<StockInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<StockInfo>>> = _uiState
 
-    private var currentSortType = SortType.BY_CODE_DESC
+    private var _currentSortType = SortType.BY_CODE_DESC
+    val currentSortType: SortType get() = _currentSortType
     
     fun loadStockInfoList(forceRefresh: Boolean = false) {
         if (!forceRefresh && _uiState.value is UiState.Success) {
@@ -44,8 +44,7 @@ class StockInfoListViewModel @Inject constructor(
         viewModelScope.launch {
             getStockInfoListUseCase()
                 .onSuccess { stockInfoList ->
-                    val sortedList = sortList(stockInfoList, currentSortType)
-                    _uiState.value = UiState.Success(sortedList)
+                    _uiState.value = UiState.Success(stockInfoList.sortedByType(currentSortType))
                 }
                 .onFailure { appError ->
                     _uiState.value = UiState.Error(appError)
@@ -53,24 +52,18 @@ class StockInfoListViewModel @Inject constructor(
         }
     }
 
-    fun getCurrentSortType(): SortType {
-        return currentSortType
-    }
-
     fun sortStockList(sortType: SortType) {
-        currentSortType = sortType
+        _currentSortType = sortType
         val currentState = _uiState.value
         if (currentState is UiState.Success) {
-            _uiState.value = UiState.Loading
-            val sortedList = sortList(currentState.data, sortType)
-            _uiState.value = UiState.Success(sortedList)
+            _uiState.value = UiState.Success(currentState.data.sortedByType(currentSortType))
         }
     }
 
-    private fun sortList(stockInfoList: List<StockInfo>, sortType: SortType): List<StockInfo> {
+    private fun List<StockInfo>.sortedByType(sortType: SortType): List<StockInfo> {
         return when (sortType) {
-            SortType.BY_CODE_ASC -> stockInfoList.sortedBy { it.code }
-            SortType.BY_CODE_DESC -> stockInfoList.sortedByDescending { it.code }
+            SortType.BY_CODE_ASC -> sortedBy { it.code }
+            SortType.BY_CODE_DESC -> sortedByDescending { it.code }
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.michaelliu.twsestockinfo.data.local.entity.StockInfoEntity
 
 @Dao
@@ -16,4 +17,10 @@ interface StockInfoDao {
 
     @Query("DELETE FROM stock_info")
     suspend fun deleteStocks()
+
+    @Transaction
+    suspend fun refreshStocks(stocks: List<StockInfoEntity>) {
+        deleteStocks()
+        insertStocks(stocks)
+    }
 }

@@ -12,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.MenuProvider
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,16 +25,17 @@ import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.FragmentStockInfoListBinding
 import com.michaelliu.twsestockinfo.domain.model.SortType
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
+import com.michaelliu.twsestockinfo.presentation.base.BaseFragment
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.SpacingItemDecoration
 import com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter.StockInfoListAdapter
 import com.michaelliu.twsestockinfo.utils.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
-class StockInfoListFragment : Fragment() {
+class StockInfoListFragment : BaseFragment<FragmentStockInfoListBinding>() {
+
     companion object {
         const val KEY_RECYCLER_VIEW_STATE = "KEY_RECYCLER_VIEW_STATE"
         const val KEY_FIRST_VISIBLE_POS = "KEY_FIRST_VISIBLE_POS"
@@ -43,39 +43,46 @@ class StockInfoListFragment : Fragment() {
     }
 
     private val viewModel: StockInfoListViewModel by viewModels()
-    private var _binding: FragmentStockInfoListBinding? = null
-    private val binding get() = _binding!!
 
     private var lastNetworkStatus: NetworkStatus = NetworkStatus.UnKnown
-    private lateinit var stockInfoListAdapter: StockInfoListAdapter
+
+    private val stockInfoListAdapter: StockInfoListAdapter by lazy {
+        StockInfoListAdapter { stockInfo ->
+            showStockInfoDetail(stockInfo)
+        }
+    }
+
+    private val recyclerViewLayoutManager: RecyclerView.LayoutManager by lazy {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            GridLayoutManager(requireContext(), 2)
+        } else {
+            LinearLayoutManager(requireContext())
+        }
+    }
 
     private var recyclerViewState: Parcelable? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentStockInfoListBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentStockInfoListBinding =
+        FragmentStockInfoListBinding.inflate(inflater, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun initView() {
         dismissExistingBottomSheet()
-
         setupSwipeRefreshLayout()
         setupRecyclerView()
         setupFabScrollToTop()
-        collectUiState()
-        collectNetworkStatus()
 
         if (viewModel.uiState.value !is UiState.Success) {
             viewModel.loadStockInfoList()
         }
 
-        requireActivity().addMenuProvider(stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        requireActivity().addMenuProvider(
+            stockInfoListMenuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED
+        )
+    }
+
+    override fun initObserver() {
+        collectUiState()
+        collectNetworkStatus()
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -110,11 +117,6 @@ class StockInfoListFragment : Fragment() {
         outState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerViewState)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     private fun setupSwipeRefreshLayout() {
         binding.swipeRefreshLayout.setColorSchemeColors(
             MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorPrimary),
@@ -126,12 +128,8 @@ class StockInfoListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        stockInfoListAdapter = StockInfoListAdapter { stockInfo ->
-            Timber.d("onClickItem : ${stockInfo.code} ${stockInfo.name}")
-            showStockInfoDetail(stockInfo)
-        }
         binding.stockListRecyclerView.apply {
-            layoutManager = getRecyclerViewLayoutManager()
+            layoutManager = recyclerViewLayoutManager
             adapter = stockInfoListAdapter
             itemAnimator = null // 防止RecyclerView閃一下
         }
@@ -142,14 +140,6 @@ class StockInfoListFragment : Fragment() {
                 SpacingItemDecoration(requireContext(), 24f)
             }
         )
-    }
-
-    private fun getRecyclerViewLayoutManager(): RecyclerView.LayoutManager {
-        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            GridLayoutManager(requireContext(), 2)
-        } else {
-            LinearLayoutManager(requireContext())
-        }
     }
 
     private fun setupFabScrollToTop() {
@@ -173,7 +163,7 @@ class StockInfoListFragment : Fragment() {
     }
 
     private fun collectUiState() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
                     binding.swipeRefreshLayout.isRefreshing = false
@@ -269,7 +259,7 @@ class StockInfoListFragment : Fragment() {
     }
 
     fun showSortTypeBottomSheet() {
-        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.getCurrentSortType()).apply {
+        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.currentSortType).apply {
             setSortTypeBottomSheetListener(object : SortTypeBottomSheet.SortTypeBottomSheetListener {
                 override fun onSortTypeSelected(sortType: SortType) {
                     viewModel.sortStockList(sortType)

@@ -14,4 +14,6 @@ class LocalDataSource @Inject constructor(
     suspend fun getAllStocks(): List<StockInfoEntity> = stockInfoDao.getAllStocks()
 
     suspend fun deleteAllStocks() = stockInfoDao.deleteStocks()
+
+    suspend fun refreshStocks(stocks: List<StockInfoEntity>) = stockInfoDao.refreshStocks(stocks)
 }
