@@ -1,23 +1,30 @@
 package com.michaelliu.twsestockinfo.utils
 
 import kotlinx.coroutines.delay
+import timber.log.Timber
+import kotlin.coroutines.cancellation.CancellationException
 
 suspend fun <T> safeApiCallWithRetry(
     maxRetries: Int = 3,
     delayStrategy: DelayStrategy = DelayStrategy.Exponential,
     apiCall: suspend () -> T
-): NetworkResult<T> {
+): AppResult<T> {
     var attempt = 0
     var currentDelay = 1000L
 
     while (true) {
         try {
             val response = apiCall()
-            return NetworkResult.Success(response)
+            return AppResult.Success(response)
         } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Timber.e(e)
+
             attempt++
             if (attempt >= maxRetries) {
-                return NetworkResult.Failure(e)
+                return AppResult.Failure(AppError.MaxRetryExceeded)
             }
 
             currentDelay = computeDelay(attempt, currentDelay, delayStrategy)
