@@ -1,25 +1,42 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat.getColor
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.ItemStockInfoBinding
+import com.michaelliu.twsestockinfo.databinding.ItemStockInfoShimmerBinding
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 
 class StockInfoListAdapter(
     private val onItemClicked: (StockInfo) -> Unit
-) : ListAdapter<StockInfo, StockInfoListAdapter.StockInfoViewHolder>(StockInfoDiffCallback()) {
+) : ListAdapter<StockInfo, ViewHolder>(StockInfoDiffCallback()) {
 
-    private val fastClickInterval = 500L
+    companion object {
+        private const val FAST_CLICK_INTERVAL = 500L
+
+        private const val VIEW_TYPE_SHIMMER = 0
+        private const val VIEW_TYPE_ITEM = 1
+
+        private const val SHIMMER_ITEM_COUNT = 10
+    }
+
+    private var isShimmer = false
     private var lastClickTime = 0L
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun showShimmer(show: Boolean) {
+        isShimmer = show
+        notifyDataSetChanged()
+    }
 
     inner class StockInfoViewHolder(
         private val binding: ItemStockInfoBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ViewHolder(binding.root) {
         fun bind(stockInfo: StockInfo) {
             val context = binding.root.context
 
@@ -63,7 +80,7 @@ class StockInfoListAdapter(
 
             binding.root.setOnClickListener {
                 val currentTime = System.currentTimeMillis()
-                if (currentTime - lastClickTime < fastClickInterval) {
+                if (currentTime - lastClickTime < FAST_CLICK_INTERVAL) {
                     return@setOnClickListener
                 }
                 lastClickTime = currentTime
@@ -73,13 +90,41 @@ class StockInfoListAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockInfoViewHolder {
-        val binding = ItemStockInfoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return StockInfoViewHolder(binding)
+    inner class ShimmerViewHolder(
+        binding: ItemStockInfoShimmerBinding
+    ) : ViewHolder(binding.root)
+
+    override fun getItemViewType(position: Int): Int {
+        return if (isShimmer) VIEW_TYPE_SHIMMER else VIEW_TYPE_ITEM
     }
 
-    override fun onBindViewHolder(holder: StockInfoViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun getItemCount(): Int {
+        return if (isShimmer) {
+            SHIMMER_ITEM_COUNT
+        } else {
+            super.getItemCount()
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            VIEW_TYPE_SHIMMER -> {
+                val binding = ItemStockInfoShimmerBinding.inflate(inflater, parent, false)
+                ShimmerViewHolder(binding)
+            }
+            else -> {
+                val binding = ItemStockInfoBinding.inflate(inflater, parent, false)
+                StockInfoViewHolder(binding)
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        if (holder is StockInfoViewHolder) {
+            val item = getItem(position)
+            holder.bind(item)
+        }
     }
 }
 

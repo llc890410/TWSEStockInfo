@@ -179,11 +179,13 @@ class StockInfoListFragment : Fragment() {
                     binding.swipeRefreshLayout.isRefreshing = false
                     when (uiState) {
                         is UiState.Loading -> {
-                            binding.progressIndicator.visibility = View.VISIBLE
-                            binding.stockListRecyclerView.visibility = View.GONE
+                            stockInfoListAdapter.showShimmer(true)
+                            binding.stockListRecyclerView.visibility = View.VISIBLE
                             binding.tvErrorMessage.visibility = View.GONE
                         }
                         is UiState.Success -> {
+                            stockInfoListAdapter.showShimmer(false)
+
                             // 因為台股商品數量太大 若直接submit排序過後list 會造成DiffUtil計算負擔
                             // 所以因應這個問題 這邊直接submit null 強制清空list 不讓DiffUtil做多餘計算
                             stockInfoListAdapter.submitList(null)
@@ -193,12 +195,10 @@ class StockInfoListFragment : Fragment() {
                                 binding.stockListRecyclerView.scrollToPosition(0)
                             }
 
-                            binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.VISIBLE
                             binding.tvErrorMessage.visibility = View.GONE
                         }
                         is UiState.Error -> {
-                            binding.progressIndicator.visibility = View.GONE
                             binding.stockListRecyclerView.visibility = View.GONE
                             binding.tvErrorMessage.text = getString(R.string.no_data_available)
                             binding.tvErrorMessage.visibility = View.VISIBLE
@@ -330,5 +330,4 @@ class StockInfoListFragment : Fragment() {
             }
         }
     }
-
 }

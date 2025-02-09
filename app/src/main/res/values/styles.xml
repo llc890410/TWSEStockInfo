@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="StockInfoCard">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+
     <style name="StockInfoHeadlineSmall">
         <item name="android:textAppearance">?attr/textAppearanceHeadlineSmall</item>
         <item name="android:textColor">@color/list_item_text_color</item>
@@ -18,5 +24,17 @@
     <style name="StockInfoContentText">
         <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
         <item name="android:textColor">@color/list_item_text_color</item>
+    </style>
+
+    <style name="ShimmerEffect">
+        <item name="shimmer_auto_start">true</item>
+        <item name="shimmer_duration">1200</item>
+        <item name="shimmer_intensity">0.3</item>
+        <item name="shimmer_base_alpha">0.6</item>
+        <item name="shimmer_highlight_alpha">1.0</item>
+    </style>
+
+    <style name="ShimmerPlaceholder">
+        <item name="android:background">?attr/colorOutlineVariant</item>
     </style>
 </resources>
