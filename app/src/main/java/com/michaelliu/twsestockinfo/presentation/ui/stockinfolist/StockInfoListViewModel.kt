@@ -33,8 +33,12 @@ class StockInfoListViewModel @Inject constructor(
     val uiState: StateFlow<UiState<List<StockInfo>>> = _uiState
 
     private var currentSortType = SortType.BY_CODE_DESC
+    
+    fun loadStockInfoList(forceRefresh: Boolean = false) {
+        if (!forceRefresh && _uiState.value is UiState.Success) {
+            return
+        }
 
-    fun loadStockInfoList() {
         _uiState.value = UiState.Loading
 
         viewModelScope.launch {

@@ -1,22 +1,45 @@
 package com.michaelliu.twsestockinfo.presentation.ui.stockinfolist.adapter
 
-import android.graphics.Color
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getColor
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.ItemStockInfoBinding
+import com.michaelliu.twsestockinfo.databinding.ItemStockInfoShimmerBinding
 import com.michaelliu.twsestockinfo.domain.model.StockInfo
 
 class StockInfoListAdapter(
     private val onItemClicked: (StockInfo) -> Unit
-) : ListAdapter<StockInfo, StockInfoListAdapter.StockInfoViewHolder>(StockInfoDiffCallback()) {
+) : ListAdapter<StockInfo, ViewHolder>(StockInfoDiffCallback()) {
+
+    companion object {
+        private const val FAST_CLICK_INTERVAL = 500L
+
+        private const val VIEW_TYPE_SHIMMER = 0
+        private const val VIEW_TYPE_ITEM = 1
+
+        private const val SHIMMER_ITEM_COUNT = 10
+    }
+
+    private var isShimmer = false
+    private var lastClickTime = 0L
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun showShimmer(show: Boolean) {
+        isShimmer = show
+        notifyDataSetChanged()
+    }
 
     inner class StockInfoViewHolder(
         private val binding: ItemStockInfoBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ViewHolder(binding.root) {
         fun bind(stockInfo: StockInfo) {
+            val context = binding.root.context
+
             // 股票代號、名稱
             binding.tvStockCode.text = stockInfo.code
             binding.tvStockName.text = stockInfo.name
@@ -42,32 +65,66 @@ class StockInfoListAdapter(
             val closingPrice = stockInfo.closingPrice ?: 0.0
             val monthlyAvgPrice = stockInfo.monthlyAvgPrice ?: 0.0
             binding.tvClosingPrice.setTextColor(
-                if (closingPrice > monthlyAvgPrice) Color.RED
-                else if (closingPrice < monthlyAvgPrice) Color.GREEN
-                else Color.BLACK
+                if (closingPrice > monthlyAvgPrice) getColor(context, R.color.list_item_text_color_red)
+                else if (closingPrice < monthlyAvgPrice) getColor(context, R.color.list_item_text_color_green)
+                else getColor(context, R.color.list_item_text_color)
             )
 
             // 漲跌價差 > 0 => 紅; 漲跌價差 < 0 => 綠
             val change = stockInfo.change ?: 0.0
             binding.tvChange.setTextColor(
-                if (change > 0) Color.RED
-                else if (change < 0) Color.GREEN
-                else Color.BLACK
+                if (change > 0) getColor(context, R.color.list_item_text_color_red)
+                else if (change < 0) getColor(context, R.color.list_item_text_color_green)
+                else getColor(context, R.color.list_item_text_color)
             )
 
             binding.root.setOnClickListener {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastClickTime < FAST_CLICK_INTERVAL) {
+                    return@setOnClickListener
+                }
+                lastClickTime = currentTime
+
                 onItemClicked(stockInfo)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockInfoViewHolder {
-        val binding = ItemStockInfoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return StockInfoViewHolder(binding)
+    inner class ShimmerViewHolder(
+        binding: ItemStockInfoShimmerBinding
+    ) : ViewHolder(binding.root)
+
+    override fun getItemViewType(position: Int): Int {
+        return if (isShimmer) VIEW_TYPE_SHIMMER else VIEW_TYPE_ITEM
     }
 
-    override fun onBindViewHolder(holder: StockInfoViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun getItemCount(): Int {
+        return if (isShimmer) {
+            SHIMMER_ITEM_COUNT
+        } else {
+            super.getItemCount()
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            VIEW_TYPE_SHIMMER -> {
+                val binding = ItemStockInfoShimmerBinding.inflate(inflater, parent, false)
+                ShimmerViewHolder(binding)
+            }
+            else -> {
+                val binding = ItemStockInfoBinding.inflate(inflater, parent, false)
+                StockInfoViewHolder(binding)
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        if (holder is StockInfoViewHolder) {
+            val item = getItem(position)
+            holder.bind(item)
+        }
     }
 }
 
