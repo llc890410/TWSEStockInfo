@@ -259,7 +259,7 @@ class StockInfoListFragment : BaseFragment<FragmentStockInfoListBinding>() {
     }
 
     fun showSortTypeBottomSheet() {
-        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.currentSortType).apply {
+        val bottomSheet = SortTypeBottomSheet.newInstance(viewModel.currentSortType.value).apply {
             setSortTypeBottomSheetListener(object : SortTypeBottomSheet.SortTypeBottomSheetListener {
                 override fun onSortTypeSelected(sortType: SortType) {
                     viewModel.sortStockList(sortType)

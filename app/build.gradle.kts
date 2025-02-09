@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.facebook.shimmer)
+    implementation(libs.androidx.datastore.preferences)
     ksp(libs.hilt.ksp)
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
