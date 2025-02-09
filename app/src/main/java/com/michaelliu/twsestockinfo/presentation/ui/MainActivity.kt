@@ -1,24 +1,22 @@
-package com.michaelliu.twsestockinfo
+package com.michaelliu.twsestockinfo.presentation.ui
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.michaelliu.twsestockinfo.R
 import com.michaelliu.twsestockinfo.databinding.ActivityMainBinding
+import com.michaelliu.twsestockinfo.presentation.base.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity<ActivityMainBinding>() {
 
-    private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun getViewBinding(): ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
 
+    override fun initView() {
+        super.initView()
         setupNavController()
 
         setSupportActionBar(binding.toolbar)
